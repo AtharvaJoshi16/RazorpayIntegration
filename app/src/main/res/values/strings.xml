@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">RazorpayIntegration</string>
+    <string name="title_activity_payment_success">PaymentSuccess</string>
+    <string name="title_activity_payment_failure">PaymentFailure</string>
+</resources>
