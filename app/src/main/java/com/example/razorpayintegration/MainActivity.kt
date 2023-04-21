@@ -22,13 +22,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.example.razorpayintegration.ui.theme.RazorpayIntegrationTheme
-import com.razorpay.Checkout
+import com.example.rpayintegration.Integration
 import com.razorpay.PaymentResultListener
-import org.json.JSONException
-import org.json.JSONObject
-import kotlin.math.roundToInt
 
-class MainActivity : ComponentActivity(),PaymentResultListener {
+class MainActivity : ComponentActivity(),Integration.PaymentCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -44,19 +41,16 @@ class MainActivity : ComponentActivity(),PaymentResultListener {
         }
     }
 
-    override fun onPaymentSuccess(p0: String?) {
+    override fun paymentSuccess(tid: String?) {
         val intent = Intent(this,PaymentSuccess::class.java)
-        intent.putExtra("tid",p0)
+        intent.putExtra("tid",tid)
         this.startActivity(intent)
     }
 
-    override fun onPaymentError(p0: Int, p1: String?) {
+    override fun paymentFailure(error: String?) {
         val intent = Intent(this,PaymentFailure::class.java)
+        intent.putExtra("err",error)
         this.startActivity(intent)
-//        if (p1 != null) {
-//            Log.d("ERROR",p1)
-//        }
-//        Toast.makeText(this,"Payment failed: $p1",Toast.LENGTH_LONG).show()
     }
 }
 
@@ -111,7 +105,7 @@ fun PaymentUI() {
                     placeholder = { Text(text = "Enter email of the recipient")}, singleLine = true
                 )
                 Button(onClick = { if(validateData(ctx,name.text,amount.text,contact.text,email.text)){
-                        pay(activity,name.text,amount.text,description.text,contact.text,email.text)
+                        pay(ctx,activity,name.text,amount.text,description.text,contact.text,email.text)
                 }
                 }, modifier = Modifier.padding(10.dp)) {
                     Text(text = "PROCEED TO PAY")
@@ -147,26 +141,9 @@ fun validateData(context : Context,name : String,amount: String,contact: String,
     return false
 }
 
-fun pay(activity: Activity,name:String,amount: String,description: String,contact:String,email:String) {
-
-    // rounding off the amount.
-    val amt = (amount.toFloat() * 100).roundToInt()
-    val checkout = Checkout()
-    checkout.setKeyID("rzp_test_Opj3ByZgovZmDV")
-    checkout.setImage(R.drawable.payment)
-    val obj = JSONObject()
-    try {
-        obj.put("name",name)
-        obj.put("description",description)
-        obj.put("amount",amt)
-        obj.put("email",email)
-//        obj.put("order_id","order_HGBasGHF0sbb")
-        obj.put("contact",contact)
-        obj.put("currency","INR")
-        checkout.open(activity,obj)
-    } catch (e: JSONException){
-        e.printStackTrace()
-    }
+fun pay(context: Context ,activity: Activity,name:String,amount: String,description: String,contact:String,email:String) {
+    val i = Integration(context)
+    i.makePayment(activity,name,amount,description,contact,email,"rzp_test_Opj3ByZgovZmDV","INR")
 }
 
 @Composable
