@@ -9,6 +9,7 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.os.Bundle
+import android.os.strictmode.IntentReceiverLeakedViolation
 import android.util.Patterns
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -22,10 +23,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.example.razorpayintegration.ui.theme.RazorpayIntegrationTheme
+import com.example.rpayintegration.DataValidation
 import com.example.rpayintegration.Integration
 import com.razorpay.PaymentResultListener
 
-class MainActivity : ComponentActivity(),Integration.PaymentCallback {
+class MainActivity : ComponentActivity(),PaymentResultListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -41,17 +43,15 @@ class MainActivity : ComponentActivity(),Integration.PaymentCallback {
         }
     }
 
-    override fun paymentSuccess(tid: String?) {
-        val intent = Intent(this,PaymentSuccess::class.java)
-        intent.putExtra("tid",tid)
-        this.startActivity(intent)
+    override fun onPaymentSuccess(p0: String?) {
+        this.startActivity(Intent(this,PaymentSuccess::class.java).putExtra("tid",p0))
     }
 
-    override fun paymentFailure(error: String?) {
-        val intent = Intent(this,PaymentFailure::class.java)
-        intent.putExtra("err",error)
-        this.startActivity(intent)
+    override fun onPaymentError(p0: Int, p1: String?) {
+        this.startActivity(Intent(this,PaymentFailure::class.java).putExtra("err",p0))
     }
+
+
 }
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
@@ -104,9 +104,8 @@ fun PaymentUI() {
                 OutlinedTextField(value = email, onValueChange = {email = it}, modifier = Modifier.padding(10.dp),
                     placeholder = { Text(text = "Enter email of the recipient")}, singleLine = true
                 )
-                Button(onClick = { if(validateData(ctx,name.text,amount.text,contact.text,email.text)){
+                Button(onClick = {
                         pay(ctx,activity,name.text,amount.text,description.text,contact.text,email.text)
-                }
                 }, modifier = Modifier.padding(10.dp)) {
                     Text(text = "PROCEED TO PAY")
                 }
@@ -116,34 +115,17 @@ fun PaymentUI() {
     }
 }
 
-fun validateData(context : Context,name : String,amount: String,contact: String,email: String) : Boolean {
-    val emailPattern = Patterns.EMAIL_ADDRESS
-    val contactPattern = Patterns.PHONE
-    if(name==""){
-        Toast.makeText(context,"Enter name",Toast.LENGTH_SHORT).show()
-        return false
-    }
-    if(emailPattern.matcher(email).matches() && contactPattern.matcher(contact).matches() && amount.toIntOrNull()!=null) {
-        return true
-    }
-    if(!emailPattern.matcher(email).matches()) {
-        Toast.makeText(context,"Invalid Email",Toast.LENGTH_SHORT).show()
-        return false
-    }
-    if(!contactPattern.matcher(contact).matches()) {
-        Toast.makeText(context,"Invalid Contact",Toast.LENGTH_SHORT).show()
-        return false
-    }
-    if(amount.toIntOrNull() == null) {
-        Toast.makeText(context,"Invalid Amount Entered",Toast.LENGTH_SHORT).show()
-        return false
-    }
-    return false
-}
 
 fun pay(context: Context ,activity: Activity,name:String,amount: String,description: String,contact:String,email:String) {
-    val i = Integration(context)
-    i.makePayment(activity,name,amount,description,contact,email,"rzp_test_Opj3ByZgovZmDV","INR")
+    val i = Integration()
+    val validation : Any = i.validateData(name,amount,contact,email, "rzp_test_Opj3ByZgovZmDV")
+    if(validation is Boolean) {
+        println("Validated...")
+        i.makePayment(activity,name,amount,description,contact,email,"rzp_test_Opj3ByZgovZmDV","INR")
+    } else if(validation is DataValidation) {
+        println("Validation Failed")
+        Toast.makeText(context,"${validation.fieldName} : ${validation.error}",Toast.LENGTH_SHORT).show()
+    }
 }
 
 @Composable
