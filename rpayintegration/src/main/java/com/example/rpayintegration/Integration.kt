@@ -11,6 +11,11 @@ import org.json.JSONException
 import org.json.JSONObject
 import kotlin.math.roundToInt
 
+/*
+    validateData() - validates all the payment data provided by the user.
+     makePayment() - initiates a razorpay payment intent only when all the data is validated successfully,
+                       else returns a DataValidation object with errors
+*/
 class Integration() : PaymentResultListener {
     private var dataValidated: Boolean = false
     fun makePayment(activity: Activity, name: String, amount:String, description: String,
@@ -73,11 +78,9 @@ class Integration() : PaymentResultListener {
     }
 
     override fun onPaymentSuccess(p0: String?) {
-        TODO("Not yet implemented")
     }
 
     override fun onPaymentError(p0: Int, p1: String?) {
-        TODO("Not yet implemented")
     }
 
 }

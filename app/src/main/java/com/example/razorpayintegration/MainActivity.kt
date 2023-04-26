@@ -48,8 +48,6 @@ class MainActivity : ComponentActivity(),PaymentResultListener {
     override fun onPaymentError(p0: Int, p1: String?) {
         this.startActivity(Intent(this,PaymentFailure::class.java).putExtra("err",p0))
     }
-
-
 }
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
