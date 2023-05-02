@@ -13,11 +13,14 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.example.razorpayintegration.ui.theme.RazorpayIntegrationTheme
@@ -91,10 +94,14 @@ fun PaymentUI() {
                 OutlinedTextField(value = description, onValueChange = {description = it}, modifier = Modifier.padding(10.dp),
                     placeholder = { Text(text = "Enter description")}, singleLine = true
                 )
-                OutlinedTextField(value = amount, onValueChange = {amount=it}, modifier = Modifier.padding(10.dp),
+                OutlinedTextField(value = amount, onValueChange = {amount=it}, keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Number
+                ) , modifier = Modifier.padding(10.dp),
                     placeholder = { Text(text = "Enter the amount")}, singleLine = true
                 )
-                OutlinedTextField(value = contact, onValueChange = {contact = it}, modifier = Modifier.padding(10.dp),
+                OutlinedTextField(value = contact, onValueChange = {contact = it}, keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Number
+                ) ,modifier = Modifier.padding(10.dp),
                     placeholder = { Text(text = "Enter contact of the recipient")}, singleLine = true
                 )
                 OutlinedTextField(value = email, onValueChange = {email = it}, modifier = Modifier.padding(10.dp),
